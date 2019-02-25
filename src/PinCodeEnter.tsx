@@ -8,7 +8,6 @@ import {
   ViewStyle
 } from "react-native";
 import PinCode, { PinStatus } from "./PinCode";
-import TouchID from "react-native-touch-id";
 import * as Keychain from "react-native-keychain";
 import { PinResultStatus } from "../index";
 import delay from "./delay";
@@ -18,74 +17,71 @@ import delay from "./delay";
  */
 
 export type IProps = {
-  storedPin: string | null
-  disableLockScreen: boolean
-  touchIDSentence: string
-  touchIDTitle?: string
-  handleResult: any
-  title: string
-  subtitle: string
-  maxAttempts: number
-  pinStatusExternal: PinResultStatus
-  changeInternalStatus: (status: PinResultStatus) => void
-  status: PinStatus
-  buttonNumberComponent: any
-  passwordLength?: number
-  passwordComponent: any
-  titleAttemptFailed?: string
-  finishProcess?: (pinCode: string) => void
-  pinCodeKeychainName: string
-  onFail?: any
-  iconButtonDeleteDisabled?: boolean
-  titleConfirmFailed?: string
-  subtitleError?: string
-  buttonDeleteText?: string
-  colorPassword?: string
-  colorPasswordError?: string
-  numbersButtonOverlayColor?: string
-  buttonDeleteComponent: any
-  titleComponent: any
-  subtitleComponent: any
-  timePinLockedAsyncStorageName: string
-  pinAttemptsAsyncStorageName: string
-  touchIDDisabled: boolean
-  getCurrentLength?: (length: number) => void
-  styleContainerPinCode?: StyleProp<ViewStyle>
-  styleColorTitle?: string
-  styleColorTitleError?: string
-  styleColorSubtitle?: string
-  styleColorSubtitleError?: string
-  emptyColumnComponent: any
-  styleButtonCircle?: StyleProp<ViewStyle>
-  styleTextButton?: StyleProp<TextStyle>
-  styleCircleHiddenPassword?: StyleProp<ViewStyle>
-  styleCircleSizeEmpty?: number
-  styleCircleSizeFull?: number
-  styleRowButtons?: StyleProp<ViewStyle>
-  styleColumnButtons?: StyleProp<ViewStyle>
-  styleEmptyColumn?: StyleProp<ViewStyle>
-  styleViewTitle?: StyleProp<ViewStyle>
-  styleTextTitle?: StyleProp<TextStyle>
-  styleTextSubtitle?: StyleProp<TextStyle>
-  styleContainer?: StyleProp<ViewStyle>
-  styleColumnDeleteButton?: StyleProp<ViewStyle>
-  styleDeleteButtonColorShowUnderlay?: string
-  styleDeleteButtonColorHideUnderlay?: string
-  styleDeleteButtonIcon?: string
-  styleDeleteButtonSize?: number
-  styleDeleteButtonText?: StyleProp<TextStyle>
-  styleColorButtonTitle?: string
-  styleColorButtonTitleSelected?: string
-  pinCodeVisible?: boolean
-  textPasswordVisibleSize?: number
-  textPasswordVisibleFamily?: string
-  endProcessFunction?: (pinCode: string) => void
-}
+  storedPin: string | null;
+  disableLockScreen: boolean;
+  handleResult: any;
+  title: string;
+  subtitle: string;
+  maxAttempts: number;
+  pinStatusExternal: PinResultStatus;
+  changeInternalStatus: (status: PinResultStatus) => void;
+  status: PinStatus;
+  buttonNumberComponent: any;
+  passwordLength?: number;
+  passwordComponent: any;
+  titleAttemptFailed?: string;
+  finishProcess?: (pinCode: string) => void;
+  pinCodeKeychainName: string;
+  onFail?: any;
+  iconButtonDeleteDisabled?: boolean;
+  titleConfirmFailed?: string;
+  subtitleError?: string;
+  buttonDeleteText?: string;
+  colorPassword?: string;
+  colorPasswordError?: string;
+  numbersButtonOverlayColor?: string;
+  buttonDeleteComponent: any;
+  titleComponent: any;
+  subtitleComponent: any;
+  timePinLockedAsyncStorageName: string;
+  pinAttemptsAsyncStorageName: string;
+  getCurrentLength?: (length: number) => void;
+  styleContainerPinCode?: StyleProp<ViewStyle>;
+  styleColorTitle?: string;
+  styleColorTitleError?: string;
+  styleColorSubtitle?: string;
+  styleColorSubtitleError?: string;
+  emptyColumnComponent: any;
+  styleButtonCircle?: StyleProp<ViewStyle>;
+  styleTextButton?: StyleProp<TextStyle>;
+  styleCircleHiddenPassword?: StyleProp<ViewStyle>;
+  styleCircleSizeEmpty?: number;
+  styleCircleSizeFull?: number;
+  styleRowButtons?: StyleProp<ViewStyle>;
+  styleColumnButtons?: StyleProp<ViewStyle>;
+  styleEmptyColumn?: StyleProp<ViewStyle>;
+  styleViewTitle?: StyleProp<ViewStyle>;
+  styleTextTitle?: StyleProp<TextStyle>;
+  styleTextSubtitle?: StyleProp<TextStyle>;
+  styleContainer?: StyleProp<ViewStyle>;
+  styleColumnDeleteButton?: StyleProp<ViewStyle>;
+  styleDeleteButtonColorShowUnderlay?: string;
+  styleDeleteButtonColorHideUnderlay?: string;
+  styleDeleteButtonIcon?: string;
+  styleDeleteButtonSize?: number;
+  styleDeleteButtonText?: StyleProp<TextStyle>;
+  styleColorButtonTitle?: string;
+  styleColorButtonTitleSelected?: string;
+  pinCodeVisible?: boolean;
+  textPasswordVisibleSize?: number;
+  textPasswordVisibleFamily?: string;
+  endProcessFunction?: (pinCode: string) => void;
+};
 
 export type IState = {
-  pinCodeStatus: PinResultStatus
-  locked: boolean
-}
+  pinCodeStatus: PinResultStatus;
+  locked: boolean;
+};
 
 class PinCodeEnter extends React.PureComponent<IProps, IState> {
   keyChainResult: string | undefined = undefined;
@@ -94,40 +90,25 @@ class PinCodeEnter extends React.PureComponent<IProps, IState> {
     super(props);
     this.state = { pinCodeStatus: PinResultStatus.initial, locked: false };
     this.endProcess = this.endProcess.bind(this);
-    this.launchTouchID = this.launchTouchID.bind(this);
   }
 
   async componentWillMount() {
     if (!this.props.storedPin) {
-      const result = await Keychain.getInternetCredentials(this.props.pinCodeKeychainName);
+      const result = await Keychain.getInternetCredentials(
+        this.props.pinCodeKeychainName
+      );
       this.keyChainResult = result.password || undefined;
     }
   }
 
-  componentDidMount() {
-    if (!this.props.touchIDDisabled) this.triggerTouchID()
-  }
-
-
-  componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>, prevContext: any): void {
+  componentDidUpdate(
+    prevProps: Readonly<IProps>,
+    prevState: Readonly<IState>,
+    prevContext: any
+  ): void {
     if (prevProps.pinStatusExternal !== this.props.pinStatusExternal) {
       this.setState({ pinCodeStatus: this.props.pinStatusExternal });
     }
-    if (prevProps.touchIDDisabled && !this.props.touchIDDisabled) {
-      this.triggerTouchID()
-    }
-  }
-
-  triggerTouchID() {
-    TouchID.isSupported()
-      .then(() => {
-        setTimeout(() => {
-          this.launchTouchID();
-        });
-      })
-      .catch((error: any) => {
-        console.warn("TouchID error", error);
-      });
   }
 
   endProcess = async (pinCode?: string) => {
@@ -151,7 +132,8 @@ class PinCodeEnter extends React.PureComponent<IProps, IState> {
           this.props.timePinLockedAsyncStorageName
         ]);
         this.props.changeInternalStatus(PinResultStatus.success);
-        if (!!this.props.finishProcess) this.props.finishProcess(pinCode as string);
+        if (!!this.props.finishProcess)
+          this.props.finishProcess(pinCode as string);
       } else {
         pinAttempts++;
         if (
@@ -162,7 +144,10 @@ class PinCodeEnter extends React.PureComponent<IProps, IState> {
             this.props.timePinLockedAsyncStorageName,
             new Date().toISOString()
           );
-          this.setState({ locked: true, pinCodeStatus: PinResultStatus.locked });
+          this.setState({
+            locked: true,
+            pinCodeStatus: PinResultStatus.locked
+          });
           this.props.changeInternalStatus(PinResultStatus.locked);
         } else {
           await AsyncStorage.setItem(
@@ -180,38 +165,17 @@ class PinCodeEnter extends React.PureComponent<IProps, IState> {
     }
   };
 
-  async launchTouchID() {
-    const optionalConfigObject = {
-      imageColor: '#e00606',
-      imageErrorColor: '#ff0000',
-      sensorDescription: 'Touch sensor',
-      sensorErrorDescription: 'Failed',
-      cancelText: 'Cancel',
-      fallbackLabel: 'Show Passcode',
-      unifiedErrors: false,
-      passcodeFallback: false
-    };
-    try {
-      await TouchID.authenticate(this.props.touchIDSentence,
-        Object.assign({}, optionalConfigObject, {title: this.props.touchIDTitle})).then((success: any) => {
-        this.endProcess(this.props.storedPin || this.keyChainResult);
-      });
-    } catch (e) {
-      console.warn("TouchID error", e);
-    }
-  }
-
   render() {
     const pin =
-      this.props.storedPin ||
-      (this.keyChainResult && this.keyChainResult);
+      this.props.storedPin || (this.keyChainResult && this.keyChainResult);
     return (
       <View
         style={
           this.props.styleContainer
             ? this.props.styleContainer
             : styles.container
-        }>
+        }
+      >
         <PinCode
           endProcess={this.endProcess}
           sentenceTitle={this.props.title}

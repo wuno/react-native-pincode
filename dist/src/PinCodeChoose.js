@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const React = require("react");
 const react_native_1 = require("react-native");
 const PinCode_1 = require("./PinCode");
-const Keychain = require("react-native-keychain");
 class PinCodeChoose extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -15,12 +14,17 @@ class PinCodeChoose extends React.PureComponent {
         };
         this.endProcessConfirm = async (pinCode) => {
             if (pinCode === this.state.pinCode) {
+                console.log("You just entered a pin code.");
                 if (this.props.storePin) {
+                    console.log("You just fired the function you passed in!");
                     this.props.storePin(pinCode);
                 }
-                else {
-                    await Keychain.setInternetCredentials(this.props.pinCodeKeychainName, this.props.pinCodeKeychainName, pinCode);
-                }
+                // else {
+                //   await Keychain.setInternetCredentials(
+                //     this.props.pinCodeKeychainName,
+                //     this.props.pinCodeKeychainName,
+                //     pinCode);
+                // }
                 if (!!this.props.finishProcess)
                     this.props.finishProcess(pinCode);
             }
